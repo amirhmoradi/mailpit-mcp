@@ -1,10 +1,10 @@
 package server
 
 import (
-	"github.com/axllent/mailpit/mcp/internal/client"
-	"github.com/axllent/mailpit/mcp/internal/prompts"
-	"github.com/axllent/mailpit/mcp/internal/resources"
-	"github.com/axllent/mailpit/mcp/internal/tools"
+	"github.com/amirhmoradi/mailpit-mcp/internal/client"
+	"github.com/amirhmoradi/mailpit-mcp/internal/prompts"
+	"github.com/amirhmoradi/mailpit-mcp/internal/resources"
+	"github.com/amirhmoradi/mailpit-mcp/internal/tools"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
