@@ -1,4 +1,4 @@
-module github.com/axllent/mailpit/mcp
+module github.com/amirhmoradi/mailpit-mcp
 
 go 1.24.3
 

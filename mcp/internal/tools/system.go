@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/axllent/mailpit/mcp/internal/client"
+	"github.com/amirhmoradi/mailpit-mcp/internal/client"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

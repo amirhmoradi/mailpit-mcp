@@ -1,13 +1,17 @@
-name: MCP Server Tests
+name: Tests
+
 on:
   pull_request:
-    branches: [develop, 'feature/**']
+    branches: [main]
     paths:
       - 'mcp/**'
+      - '.github/workflows/tests-mcp.yml'
   push:
-    branches: [develop, 'feature/**']
+    branches: [main]
     paths:
       - 'mcp/**'
+      - '.github/workflows/tests-mcp.yml'
+
 jobs:
   test:
     strategy:
@@ -19,26 +23,22 @@ jobs:
       run:
         working-directory: ./mcp
     steps:
-    - uses: actions/setup-go@v6
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
-        cache: false
-    - uses: actions/checkout@v6
-    - name: Set up Go environment
-      uses: actions/cache@v5
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go
-        key: ${{ runner.os }}-go-mcp-${{ hashFiles('mcp/**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-mcp-
+        cache-dependency-path: mcp/go.sum
+
+    - name: Verify Go module
+      run: go mod verify
+
     - name: Test Go linting (gofmt)
       if: startsWith(matrix.os, 'ubuntu') == true
       run: gofmt -s -w . && git diff --exit-code
-    - name: Verify Go module
-      run: go mod verify
+
     - name: Build
       run: go build -v ./...
+
     - name: Run Go tests
       run: go test -v ./...

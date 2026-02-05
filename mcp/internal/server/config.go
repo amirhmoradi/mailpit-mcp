@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/axllent/mailpit/mcp/internal/client"
+	"github.com/amirhmoradi/mailpit-mcp/internal/client"
 )
 
 // Config holds the server configuration.

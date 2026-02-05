@@ -1,157 +1,109 @@
-<h1 align="center">
-  Mailpit - email testing for developers
-</h1>
+# Mailpit MCP Server
 
-<div align="center">
-    <a href="https://github.com/axllent/mailpit/actions/workflows/tests.yml"><img src="https://github.com/axllent/mailpit/actions/workflows/tests.yml/badge.svg" alt="CI Tests status"></a>
-    <a href="https://github.com/axllent/mailpit/actions/workflows/release-build.yml"><img src="https://github.com/axllent/mailpit/actions/workflows/release-build.yml/badge.svg" alt="CI build status"></a>
-    <a href="https://github.com/axllent/mailpit/actions/workflows/build-docker.yml"><img src="https://github.com/axllent/mailpit/actions/workflows/build-docker.yml/badge.svg" alt="CI Docker build status"></a>
-    <a href="https://github.com/axllent/mailpit/actions/workflows/codeql-analysis.yml"><img src="https://github.com/axllent/mailpit/actions/workflows/codeql-analysis.yml/badge.svg" alt="Code quality"></a>
-    <a href="https://goreportcard.com/report/github.com/axllent/mailpit"><img src="https://goreportcard.com/badge/github.com/axllent/mailpit" alt="Go Report Card"></a>
-    <br>
-    <a href="https://github.com/axllent/mailpit/releases/latest"><img src="https://img.shields.io/github/v/release/axllent/mailpit.svg" alt="Latest release"></a>
-    <a href="https://hub.docker.com/r/axllent/mailpit"><img src="https://img.shields.io/docker/pulls/axllent/mailpit.svg" alt="Docker pulls"></a>
-</div>
-<br>
-<p align="center">
-  <a href="https://mailpit.axllent.org">Website</a>  •
-  <a href="https://mailpit.axllent.org/docs/">Documentation</a>  •
-  <a href="https://mailpit.axllent.org/docs/api-v1/">API</a>
-</p>
+A standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that enables AI assistants to interact with [Mailpit](https://mailpit.axllent.org/) email testing environments.
 
-<hr>
+## Overview
 
-**Mailpit** is a small, fast, low memory, zero-dependency, multi-platform email testing tool & API for developers.
+This project provides an MCP server that connects AI assistants (Claude, Cursor, VS Code Copilot, etc.) to Mailpit's API, enabling natural language interaction with your email testing workflow.
 
-It acts as an SMTP server, provides a modern web interface to view & test captured emails, and includes an API for automated integration testing.
-
-Mailpit was originally **inspired** by MailHog which is [no longer maintained](https://github.com/mailhog/MailHog/issues/442#issuecomment-1493415258) and hasn't seen active development or security updates for a few years now.
-
-![Mailpit](https://raw.githubusercontent.com/axllent/mailpit/develop/server/ui-src/screenshot.png)
-
-
-## Features
-
-- Runs entirely from a single [static binary](https://mailpit.axllent.org/docs/install/) or multi-architecture [Docker images](https://mailpit.axllent.org/docs/install/docker/)
-- Modern web UI with advanced [mail search](https://mailpit.axllent.org/docs/usage/search-filters/) to view emails (formatted HTML, highlighted HTML source, text, headers, raw source, and MIME attachments
-including image thumbnails), including optional [HTTPS](https://mailpit.axllent.org/docs/configuration/http/) & [authentication](https://mailpit.axllent.org/docs/configuration/http/)
-- [SMTP server](https://mailpit.axllent.org/docs/configuration/smtp/) with optional STARTTLS or SSL/TLS, authentication (including an "accept any" mode)
-- A [REST API](https://mailpit.axllent.org/docs/api-v1/) for integration testing
-- Real-time web UI updates using web sockets for new mail & optional [browser notifications](https://mailpit.axllent.org/docs/usage/notifications/) when new mail is received
-- Optional [POP3 server](https://mailpit.axllent.org/docs/configuration/pop3/) to download captured message directly into your email client
-- [HTML check](https://mailpit.axllent.org/docs/usage/html-check/) to test & score mail client compatibility with HTML emails
-- [Link check](https://mailpit.axllent.org/docs/usage/link-check/) to test message links (HTML & text) & linked images
-- [Spam check](https://mailpit.axllent.org/docs/usage/spamassassin/) to test message "spamminess" using a running SpamAssassin server
-- [Create screenshots](https://mailpit.axllent.org/docs/usage/html-screenshots/) of HTML messages via web UI
-- Mobile and tablet HTML preview toggle in desktop mode
-- [Message tagging](https://mailpit.axllent.org/docs/usage/tagging/) including manual tagging or automated tagging using filtering and "plus addressing"
-- [SMTP relaying](https://mailpit.axllent.org/docs/configuration/smtp-relay/) (message release) - relay messages via a different SMTP server including an optional allowlist of accepted recipients
-- [SMTP forwarding](https://mailpit.axllent.org/docs/configuration/smtp-forward/) - automatically forward messages via a different SMTP server to predefined email addresses
-- Fast message [storing & processing](https://mailpit.axllent.org/docs/configuration/email-storage/) - ingesting 100-200 emails per second over SMTP depending on CPU, network speed & email size,
-easily handling tens of thousands of emails, with automatic email pruning (by default keeping the most recent 500 emails)
-- [Chaos](https://mailpit.axllent.org/docs/integration/chaos/) feature to enable configurable SMTP errors to test application resilience
-- `List-Unsubscribe` syntax validation
-- Optional [webhook](https://mailpit.axllent.org/docs/integration/webhook/) for received messages
-- [MCP server](#mcp-server-for-ai-assistants) for AI assistant integration (Claude, Cursor, VS Code Copilot)
-
-
-## Installation
-
-The Mailpit web UI listens by default on `http://0.0.0.0:8025` and the SMTP port on `0.0.0.0:1025`.
-
-Mailpit runs as a single binary and can be installed in different ways:
-
-
-### Install via package managers
-
-- **Mac**: `brew install mailpit` (to run automatically in the background: `brew services start mailpit`)
-- **Arch Linux**: available in the AUR as `mailpit`
-- **FreeBSD**: `pkg install mailpit`
-
-
-### Install via script (Linux & Mac)
-
-Linux & Mac users can install it directly to `/usr/local/bin/mailpit` with:
-
-```shell
-sudo sh < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)
-```
-
-You can also change the install path to something else by setting the `INSTALL_PATH` environment, for example:
-
-```shell
-INSTALL_PATH=/usr/bin sudo sh < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)
-```
-
-
-### Download static binary (Windows, Linux and Mac)
-
-Static binaries can always be found on the [releases](https://github.com/axllent/mailpit/releases/latest). The `mailpit` binary can be extracted and copied to your `$PATH`, or simply run as `./mailpit`.
-
-
-### Docker
-
-See [Docker instructions](https://mailpit.axllent.org/docs/install/docker/) for 386, amd64 & arm64 images.
-
-
-### Compile from source
-
-To build Mailpit from source, see [Building from source](https://mailpit.axllent.org/docs/install/source/).
-
-
-## Usage
-
-Run `mailpit -h` to see options. More information can be seen in [the docs](https://mailpit.axllent.org/docs/configuration/runtime-options/).
-
-If installed using homebrew, you may run `brew services start mailpit` to always run mailpit automatically.
-
-
-### Testing Mailpit
-
-Please refer to [the documentation](https://mailpit.axllent.org/docs/install/testing/) on how to easily test email delivery to Mailpit.
-
-
-### Configuring sendmail
-
-Mailpit's SMTP server (default on port 1025), so you will likely need to configure your sending application to deliver mail via that port. 
-A common MTA (Mail Transfer Agent) that delivers system emails to an SMTP server is `sendmail`, used by many applications, including PHP. 
-Mailpit can also act as substitute for sendmail. For instructions on how to set this up, please refer to the [sendmail documentation](https://mailpit.axllent.org/docs/install/sendmail/).
-
-## MCP Server for AI Assistants
-
-Mailpit includes an optional [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that enables AI assistants like **Claude**, **Cursor**, and **VS Code with Copilot** to interact with your email testing environment.
-
-### What can AI assistants do with Mailpit?
-
+**Key Features:**
 - Browse, search, and analyze emails using natural language
 - Check HTML compatibility across email clients
 - Validate links and detect broken images
-- Run spam analysis on messages
+- Run spam analysis on messages (requires SpamAssassin)
 - Send test emails and manage tags
 - Debug email delivery issues
 
-### Quick Start
+## Prerequisites
 
-**Option 1: Docker (recommended for HTTP mode)**
+- A running [Mailpit](https://mailpit.axllent.org/) instance (the MCP server connects to Mailpit via its HTTP API)
+- Go 1.24+ (if building from source)
+
+## Installation
+
+### Option 1: Docker (Recommended)
 
 ```bash
 docker run -d \
   --name mailpit-mcp \
-  -e MAILPIT_URL=http://your-mailpit:8025 \
+  -e MAILPIT_URL=http://your-mailpit-host:8025 \
+  -e MCP_TRANSPORT=http \
   -p 3000:3000 \
-  ghcr.io/axllent/mailpit-mcp:latest
+  ghcr.io/amirhmoradi/mailpit-mcp:latest
 ```
 
-**Option 2: Build from source**
+### Option 2: Docker Compose
+
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  mailpit-mcp:
+    image: ghcr.io/amirhmoradi/mailpit-mcp:latest
+    environment:
+      MAILPIT_URL: http://mailpit:8025
+      MCP_TRANSPORT: http
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mailpit
+```
+
+Run with:
+```bash
+docker-compose up -d
+```
+
+### Option 3: Build from Source
 
 ```bash
+# Clone the repository
+git clone https://github.com/amirhmoradi/mailpit-mcp.git
+cd mailpit-mcp
+
+# Build the binary
 cd mcp
 go build -o mailpit-mcp-server ./cmd/mailpit-mcp-server
+
+# Run the server
+MAILPIT_URL=http://localhost:8025 ./mailpit-mcp-server
 ```
 
-### Connect to Claude Desktop
+### Option 4: Go Install
 
-Add to your Claude Desktop config (`claude_desktop_config.json`):
+```bash
+go install github.com/amirhmoradi/mailpit-mcp/cmd/mailpit-mcp-server@latest
+```
+
+## Configuration
+
+Configure the MCP server using environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MAILPIT_URL` | Mailpit server URL | `http://localhost:8025` |
+| `MAILPIT_AUTH_USER` | Basic auth username (if Mailpit requires auth) | (none) |
+| `MAILPIT_AUTH_PASS` | Basic auth password | (none) |
+| `MAILPIT_TIMEOUT` | Request timeout in seconds | `30` |
+| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
+| `MCP_HTTP_HOST` | HTTP server bind address | `0.0.0.0` |
+| `MCP_HTTP_PORT` | HTTP server port | `3000` |
+| `MCP_LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` | `info` |
+
+## Usage with AI Tools
+
+### Claude Desktop
+
+Add to your Claude Desktop configuration file:
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -166,9 +118,31 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 }
 ```
 
-### Connect to Cursor / VS Code
+Or if using Docker:
 
-For IDE integration, run the MCP server in HTTP mode and connect:
+```json
+{
+  "mcpServers": {
+    "mailpit": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm",
+        "-e", "MAILPIT_URL=http://host.docker.internal:8025",
+        "ghcr.io/amirhmoradi/mailpit-mcp:latest"]
+    }
+  }
+}
+```
+
+### Cursor / VS Code
+
+For IDE integration, run the MCP server in HTTP mode:
+
+```bash
+# Start the server in HTTP mode
+MAILPIT_URL=http://localhost:8025 MCP_TRANSPORT=http ./mailpit-mcp-server
+```
+
+Then add to your IDE's MCP configuration:
 
 ```json
 {
@@ -180,11 +154,85 @@ For IDE integration, run the MCP server in HTTP mode and connect:
 }
 ```
 
-For full documentation, see [mcp/README.md](mcp/README.md).
+## Available Tools
 
----
+| Tool | Description |
+|------|-------------|
+| `list_messages` | List messages with pagination |
+| `search_messages` | Search using Mailpit query syntax |
+| `get_message` | Get full message details |
+| `get_message_headers` | Get message headers |
+| `get_message_source` | Get raw RFC 2822 source |
+| `get_message_html` | Get rendered HTML content |
+| `get_message_text` | Get plain text content |
+| `get_attachment` | Download an attachment |
+| `delete_messages` | Delete messages by ID |
+| `delete_search` | Delete messages matching a search |
+| `set_read_status` | Mark messages as read/unread |
+| `check_html` | Check HTML email client compatibility |
+| `check_links` | Validate links in an email |
+| `check_spam` | Get SpamAssassin analysis |
+| `list_tags` | List all tags |
+| `set_tags` | Set tags on messages |
+| `rename_tag` | Rename a tag |
+| `delete_tag` | Delete a tag |
+| `send_message` | Send a test email |
+| `release_message` | Relay to external SMTP |
+| `get_chaos` | Get chaos testing config |
+| `set_chaos` | Configure chaos testing |
+| `get_info` | Get server information |
+| `get_webui_config` | Get Mailpit configuration |
 
-<p align="center">
-  For team features, multiple inboxes, and a hosted setup, try
-  <a href="https://mailtrap.io/?ref=mailpit">Mailtrap</a>, our friendly companion.
-</p>
+## Available Prompts
+
+| Prompt | Description |
+|--------|-------------|
+| `analyze_latest_email` | Comprehensive analysis of the most recent email |
+| `debug_email_delivery` | Debug delivery issues for a message |
+| `check_email_quality` | Full quality check (HTML, links, spam) |
+| `search_emails` | Help construct search queries |
+| `compose_test_email` | Create and send test emails |
+| `analyze_email_headers` | Deep header analysis |
+| `compare_emails` | Compare two emails (A/B testing) |
+| `summarize_inbox` | Summarize inbox state |
+
+## Search Syntax
+
+The search tool supports Mailpit's query syntax:
+
+- `from:email@example.com` - Sender address
+- `to:email@example.com` - Recipient address
+- `subject:keyword` - Subject contains text
+- `message-id:id` - Specific Message-ID
+- `tag:tagname` - Has specific tag
+- `is:read` / `is:unread` - Read status
+- `has:attachment` - Has attachments
+- `before:YYYY-MM-DD` - Before date
+- `after:YYYY-MM-DD` - After date
+
+Multiple terms are combined with AND logic.
+
+## Development
+
+```bash
+# Build
+cd mcp
+go build ./...
+
+# Test
+go test ./...
+
+# Run locally (STDIO mode for Claude Desktop)
+MAILPIT_URL=http://localhost:8025 go run ./cmd/mailpit-mcp-server
+
+# Run locally (HTTP mode for IDE integration)
+MAILPIT_URL=http://localhost:8025 MCP_TRANSPORT=http go run ./cmd/mailpit-mcp-server
+```
+
+## License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+This project provides MCP integration for [Mailpit](https://mailpit.axllent.org/), the excellent email testing tool created by [@axllent](https://github.com/axllent).

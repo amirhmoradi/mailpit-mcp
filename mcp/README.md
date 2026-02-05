@@ -1,173 +1,93 @@
-# Mailpit MCP Server
+# Mailpit MCP Server - Source Code
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for [Mailpit](https://mailpit.axe.dev/), enabling AI assistants to interact with email testing workflows.
+This directory contains the source code for the Mailpit MCP server.
 
-## Overview
+For full documentation, installation instructions, and usage examples, see the [main README](../README.md).
 
-This MCP server provides AI-powered tools and agents (like Claude, Cursor, or VS Code with Copilot) the ability to:
+## Directory Structure
 
-- Browse, search, and manage emails in Mailpit
-- Analyze email content, headers, and attachments
-- Validate emails for HTML compatibility, broken links, and spam scores
-- Send test emails and manage email tags
-- Access pre-built prompts for common email testing workflows
-
-## Installation
-
-### Docker
-
-```bash
-# Replace <owner> with the Docker Hub username (e.g., axllent)
-docker run -d \
-  --name mailpit-mcp \
-  -e MAILPIT_URL=http://mailpit:8025 \
-  -p 3000:3000 \
-  <owner>/mailpit-mcp:latest
+```
+mcp/
+├── cmd/
+│   └── mailpit-mcp-server/   # Main entry point
+├── internal/
+│   ├── client/               # Mailpit HTTP API client
+│   ├── server/               # MCP server setup and config
+│   ├── tools/                # MCP tool implementations
+│   ├── resources/            # MCP resource implementations
+│   └── prompts/              # MCP prompt templates
+├── Dockerfile                # Docker build configuration
+├── go.mod                    # Go module definition
+└── go.sum                    # Go dependencies lock file
 ```
 
-Or use GitHub Container Registry:
+## Quick Build
 
 ```bash
-docker run -d \
-  --name mailpit-mcp \
-  -e MAILPIT_URL=http://mailpit:8025 \
-  -p 3000:3000 \
-  ghcr.io/axllent/mailpit-mcp:latest
-```
-
-### Docker Compose
-
-```yaml
-services:
-  mailpit:
-    image: axllent/mailpit:latest
-    ports:
-      - "8025:8025"
-      - "1025:1025"
-
-  mailpit-mcp:
-    image: ghcr.io/axllent/mailpit-mcp:latest
-    environment:
-      MAILPIT_URL: http://mailpit:8025
-      MCP_TRANSPORT: http
-    ports:
-      - "3000:3000"
-    depends_on:
-      - mailpit
-```
-
-### Build from Source
-
-```bash
-cd mcp
+# Build the binary
 go build -o mailpit-mcp-server ./cmd/mailpit-mcp-server
+
+# Run tests
+go test ./...
+
+# Run locally
+MAILPIT_URL=http://localhost:8025 ./mailpit-mcp-server
 ```
 
-## Configuration
+## Docker Build
 
-Configure the MCP server using environment variables:
+```bash
+# Build the Docker image
+docker build -t mailpit-mcp:local .
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MAILPIT_URL` | Mailpit server URL | `http://localhost:8025` |
-| `MAILPIT_AUTH_USER` | Basic auth username | (none) |
-| `MAILPIT_AUTH_PASS` | Basic auth password | (none) |
-| `MAILPIT_TIMEOUT` | Request timeout | `30s` |
-| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
-| `MCP_HTTP_HOST` | HTTP server host | `127.0.0.1` |
-| `MCP_HTTP_PORT` | HTTP server port | `3000` |
-| `MCP_LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` | `info` |
-
-## Usage with AI Tools
-
-### Claude Desktop
-
-Add to your Claude Desktop configuration (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "mailpit": {
-      "command": "/path/to/mailpit-mcp-server",
-      "env": {
-        "MAILPIT_URL": "http://localhost:8025"
-      }
-    }
-  }
-}
+# Run the container
+docker run -d \
+  --name mailpit-mcp \
+  -e MAILPIT_URL=http://host.docker.internal:8025 \
+  -e MCP_TRANSPORT=http \
+  -p 3000:3000 \
+  mailpit-mcp:local
 ```
 
-### Cursor / VS Code
-
-For HTTP transport (recommended for IDE integration):
-
-```json
-{
-  "mcp.servers": {
-    "mailpit": {
-      "url": "http://localhost:3000/mcp"
-    }
-  }
-}
-```
-
-## Available Tools
+## Available MCP Tools
 
 ### Message Management
-
-| Tool | Description |
-|------|-------------|
-| `list_messages` | List messages with pagination |
-| `search_messages` | Search messages using query syntax |
-| `get_message` | Get full message details |
-| `get_message_headers` | Get message headers |
-| `get_message_source` | Get raw email source (RFC 2822) |
-| `delete_messages` | Delete messages by ID |
-| `delete_search` | Delete messages matching a search |
-| `set_read_status` | Mark messages as read/unread |
+- `list_messages` - List messages with pagination
+- `search_messages` - Search using Mailpit query syntax
+- `get_message` - Get full message details
+- `get_message_headers` - Get message headers
+- `get_message_source` - Get raw RFC 2822 source
+- `delete_messages` - Delete messages by ID
+- `delete_search` - Delete messages matching a search
+- `set_read_status` - Mark messages as read/unread
 
 ### Content Tools
-
-| Tool | Description |
-|------|-------------|
-| `get_message_html` | Get rendered HTML content |
-| `get_message_text` | Get plain text content |
-| `get_attachment` | Download an attachment |
+- `get_message_html` - Get rendered HTML content
+- `get_message_text` - Get plain text content
+- `get_attachment` - Download an attachment
 
 ### Validation Tools
-
-| Tool | Description |
-|------|-------------|
-| `check_html` | Check HTML email client compatibility |
-| `check_links` | Validate links in an email |
-| `check_spam` | Get SpamAssassin analysis |
+- `check_html` - Check HTML email client compatibility
+- `check_links` - Validate links in an email
+- `check_spam` - Get SpamAssassin analysis
 
 ### Tag Management
-
-| Tool | Description |
-|------|-------------|
-| `list_tags` | List all tags |
-| `set_tags` | Set tags on messages |
-| `rename_tag` | Rename a tag |
-| `delete_tag` | Delete a tag |
+- `list_tags` - List all tags
+- `set_tags` - Set tags on messages
+- `rename_tag` - Rename a tag
+- `delete_tag` - Delete a tag
 
 ### Testing Tools
-
-| Tool | Description |
-|------|-------------|
-| `send_message` | Send a test email |
-| `release_message` | Relay a message to external SMTP |
-| `get_chaos` | Get chaos testing configuration |
-| `set_chaos` | Configure chaos testing triggers |
+- `send_message` - Send a test email
+- `release_message` - Relay to external SMTP
+- `get_chaos` - Get chaos testing configuration
+- `set_chaos` - Configure chaos testing triggers
 
 ### System Tools
+- `get_info` - Get server information and stats
+- `get_webui_config` - Get Mailpit configuration
 
-| Tool | Description |
-|------|-------------|
-| `get_info` | Get server information and stats |
-| `get_webui_config` | Get Mailpit configuration |
-
-## Available Resources
+## MCP Resources
 
 | Resource URI | Description |
 |--------------|-------------|
@@ -176,12 +96,12 @@ For HTTP transport (recommended for IDE integration):
 | `mailpit://tags` | All current tags (JSON) |
 | `mailpit://config` | Mailpit configuration (JSON) |
 
-## Available Prompts
+## MCP Prompts
 
 | Prompt | Description |
 |--------|-------------|
-| `analyze_latest_email` | Comprehensive analysis of the most recent email |
-| `debug_email_delivery` | Debug delivery issues for a message |
+| `analyze_latest_email` | Comprehensive email analysis |
+| `debug_email_delivery` | Debug delivery issues |
 | `check_email_quality` | Full quality check (HTML, links, spam) |
 | `search_emails` | Help construct search queries |
 | `compose_test_email` | Create and send test emails |
@@ -189,53 +109,6 @@ For HTTP transport (recommended for IDE integration):
 | `compare_emails` | Compare two emails (A/B testing) |
 | `summarize_inbox` | Summarize inbox state |
 
-## Search Syntax
-
-The search tool supports Mailpit's query syntax:
-
-- `from:email@example.com` - Sender address
-- `to:email@example.com` - Recipient address
-- `subject:keyword` - Subject contains text
-- `message-id:id` - Specific Message-ID
-- `tag:tagname` - Has specific tag
-- `is:read` / `is:unread` - Read status
-- `has:attachment` - Has attachments
-- `before:YYYY-MM-DD` - Before date
-- `after:YYYY-MM-DD` - After date
-
-Multiple terms are combined with AND logic.
-
-## Development
-
-### Prerequisites
-
-- Go 1.24+
-- Running Mailpit instance
-
-### Build
-
-```bash
-cd mcp
-go build ./...
-```
-
-### Test
-
-```bash
-cd mcp
-go test ./...
-```
-
-### Run Locally
-
-```bash
-# STDIO mode (for Claude Desktop)
-MAILPIT_URL=http://localhost:8025 ./mailpit-mcp-server
-
-# HTTP mode (for IDE integration)
-MAILPIT_URL=http://localhost:8025 MCP_TRANSPORT=http ./mailpit-mcp-server
-```
-
 ## License
 
-This project is part of Mailpit and is licensed under the MIT License.
+MIT License
