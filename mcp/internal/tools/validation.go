@@ -11,7 +11,7 @@ import (
 
 // CheckHTMLArgs are the arguments for check_html.
 type CheckHTMLArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterCheckHTML registers the check_html tool.
@@ -33,8 +33,8 @@ func RegisterCheckHTML(s *mcp.Server, c *client.Client) {
 
 // CheckLinksArgs are the arguments for check_links.
 type CheckLinksArgs struct {
-	ID     string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
-	Follow bool   `json:"follow,omitempty" jsonschema:"description=Follow redirects when checking links (default: false)"`
+	ID     string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
+	Follow bool   `json:"follow,omitempty" jsonschema:"Follow redirects when checking links (default: false)"`
 }
 
 // RegisterCheckLinks registers the check_links tool.
@@ -56,7 +56,7 @@ func RegisterCheckLinks(s *mcp.Server, c *client.Client) {
 
 // CheckSpamArgs are the arguments for check_spam.
 type CheckSpamArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterCheckSpam registers the check_spam tool.

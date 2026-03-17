@@ -11,22 +11,22 @@ import (
 
 // SendMessageArgs are the arguments for send_message.
 type SendMessageArgs struct {
-	FromEmail string            `json:"from_email" jsonschema:"description=Sender email address (required)"`
-	FromName  string            `json:"from_name,omitempty" jsonschema:"description=Sender display name"`
-	To        []RecipientArg    `json:"to,omitempty" jsonschema:"description=To recipients"`
-	Cc        []RecipientArg    `json:"cc,omitempty" jsonschema:"description=CC recipients"`
-	Bcc       []string          `json:"bcc,omitempty" jsonschema:"description=BCC recipient email addresses"`
-	Subject   string            `json:"subject,omitempty" jsonschema:"description=Email subject"`
-	Text      string            `json:"text,omitempty" jsonschema:"description=Plain text body"`
-	HTML      string            `json:"html,omitempty" jsonschema:"description=HTML body"`
-	Tags      []string          `json:"tags,omitempty" jsonschema:"description=Tags to apply to the message"`
-	Headers   map[string]string `json:"headers,omitempty" jsonschema:"description=Custom headers as key-value pairs"`
+	FromEmail string            `json:"from_email" jsonschema:"Sender email address (required)"`
+	FromName  string            `json:"from_name,omitempty" jsonschema:"Sender display name"`
+	To        []RecipientArg    `json:"to,omitempty" jsonschema:"To recipients"`
+	Cc        []RecipientArg    `json:"cc,omitempty" jsonschema:"CC recipients"`
+	Bcc       []string          `json:"bcc,omitempty" jsonschema:"BCC recipient email addresses"`
+	Subject   string            `json:"subject,omitempty" jsonschema:"Email subject"`
+	Text      string            `json:"text,omitempty" jsonschema:"Plain text body"`
+	HTML      string            `json:"html,omitempty" jsonschema:"HTML body"`
+	Tags      []string          `json:"tags,omitempty" jsonschema:"Tags to apply to the message"`
+	Headers   map[string]string `json:"headers,omitempty" jsonschema:"Custom headers as key-value pairs"`
 }
 
 // RecipientArg represents an email recipient.
 type RecipientArg struct {
-	Email string `json:"email" jsonschema:"description=Recipient email address"`
-	Name  string `json:"name,omitempty" jsonschema:"description=Recipient display name"`
+	Email string `json:"email" jsonschema:"Recipient email address"`
+	Name  string `json:"name,omitempty" jsonschema:"Recipient display name"`
 }
 
 // RegisterSendMessage registers the send_message tool.
@@ -92,8 +92,8 @@ func RegisterSendMessage(s *mcp.Server, c *client.Client) {
 
 // ReleaseMessageArgs are the arguments for release_message.
 type ReleaseMessageArgs struct {
-	ID string   `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
-	To []string `json:"to" jsonschema:"description=Email addresses to relay the message to"`
+	ID string   `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
+	To []string `json:"to" jsonschema:"Email addresses to relay the message to"`
 }
 
 // RegisterReleaseMessage registers the release_message tool.
@@ -134,12 +134,12 @@ func RegisterGetChaos(s *mcp.Server, c *client.Client) {
 
 // SetChaosArgs are the arguments for set_chaos.
 type SetChaosArgs struct {
-	SenderProbability    int `json:"sender_probability,omitempty" jsonschema:"description=Probability (0-100) of rejecting at MAIL FROM stage"`
-	SenderErrorCode      int `json:"sender_error_code,omitempty" jsonschema:"description=SMTP error code (400-599) for sender rejection"`
-	RecipientProbability int `json:"recipient_probability,omitempty" jsonschema:"description=Probability (0-100) of rejecting at RCPT TO stage"`
-	RecipientErrorCode   int `json:"recipient_error_code,omitempty" jsonschema:"description=SMTP error code (400-599) for recipient rejection"`
-	AuthProbability      int `json:"auth_probability,omitempty" jsonschema:"description=Probability (0-100) of rejecting authentication"`
-	AuthErrorCode        int `json:"auth_error_code,omitempty" jsonschema:"description=SMTP error code (400-599) for auth rejection"`
+	SenderProbability    int `json:"sender_probability,omitempty" jsonschema:"Probability (0-100) of rejecting at MAIL FROM stage"`
+	SenderErrorCode      int `json:"sender_error_code,omitempty" jsonschema:"SMTP error code (400-599) for sender rejection"`
+	RecipientProbability int `json:"recipient_probability,omitempty" jsonschema:"Probability (0-100) of rejecting at RCPT TO stage"`
+	RecipientErrorCode   int `json:"recipient_error_code,omitempty" jsonschema:"SMTP error code (400-599) for recipient rejection"`
+	AuthProbability      int `json:"auth_probability,omitempty" jsonschema:"Probability (0-100) of rejecting authentication"`
+	AuthErrorCode        int `json:"auth_error_code,omitempty" jsonschema:"SMTP error code (400-599) for auth rejection"`
 }
 
 // RegisterSetChaos registers the set_chaos tool.

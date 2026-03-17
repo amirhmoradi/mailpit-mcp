@@ -31,8 +31,8 @@ func RegisterListTags(s *mcp.Server, c *client.Client) {
 
 // SetTagsArgs are the arguments for set_tags.
 type SetTagsArgs struct {
-	IDs  []string `json:"ids" jsonschema:"description=Array of message database IDs to tag"`
-	Tags []string `json:"tags" jsonschema:"description=Array of tag names to set. Pass empty array to remove all tags."`
+	IDs  []string `json:"ids" jsonschema:"Array of message database IDs to tag"`
+	Tags []string `json:"tags" jsonschema:"Array of tag names to set. Pass empty array to remove all tags."`
 }
 
 // RegisterSetTags registers the set_tags tool.
@@ -57,8 +57,8 @@ func RegisterSetTags(s *mcp.Server, c *client.Client) {
 
 // RenameTagArgs are the arguments for rename_tag.
 type RenameTagArgs struct {
-	OldName string `json:"old_name" jsonschema:"description=Current tag name to rename"`
-	NewName string `json:"new_name" jsonschema:"description=New name for the tag"`
+	OldName string `json:"old_name" jsonschema:"Current tag name to rename"`
+	NewName string `json:"new_name" jsonschema:"New name for the tag"`
 }
 
 // RegisterRenameTag registers the rename_tag tool.
@@ -83,7 +83,7 @@ func RegisterRenameTag(s *mcp.Server, c *client.Client) {
 
 // DeleteTagArgs are the arguments for delete_tag.
 type DeleteTagArgs struct {
-	Name string `json:"name" jsonschema:"description=Tag name to delete"`
+	Name string `json:"name" jsonschema:"Tag name to delete"`
 }
 
 // RegisterDeleteTag registers the delete_tag tool.
