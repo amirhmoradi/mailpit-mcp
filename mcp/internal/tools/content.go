@@ -11,7 +11,7 @@ import (
 
 // GetMessageHTMLArgs are the arguments for get_message_html.
 type GetMessageHTMLArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageHTML registers the get_message_html tool.
@@ -33,7 +33,7 @@ func RegisterGetMessageHTML(s *mcp.Server, c *client.Client) {
 
 // GetMessageTextArgs are the arguments for get_message_text.
 type GetMessageTextArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageText registers the get_message_text tool.
@@ -58,8 +58,8 @@ func RegisterGetMessageText(s *mcp.Server, c *client.Client) {
 
 // GetAttachmentArgs are the arguments for get_attachment.
 type GetAttachmentArgs struct {
-	MessageID string `json:"message_id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
-	PartID    string `json:"part_id" jsonschema:"description=Attachment part ID (from message details)"`
+	MessageID string `json:"message_id" jsonschema:"Message database ID or 'latest' for the most recent message"`
+	PartID    string `json:"part_id" jsonschema:"Attachment part ID (from message details)"`
 }
 
 // RegisterGetAttachment registers the get_attachment tool.

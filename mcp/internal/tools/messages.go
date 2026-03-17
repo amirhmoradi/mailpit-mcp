@@ -11,8 +11,8 @@ import (
 
 // ListMessagesArgs are the arguments for list_messages.
 type ListMessagesArgs struct {
-	Start int `json:"start,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
-	Limit int `json:"limit,omitempty" jsonschema:"description=Number of messages to return (default: 50)"`
+	Start int `json:"start,omitempty" jsonschema:"Pagination offset (default: 0)"`
+	Limit int `json:"limit,omitempty" jsonschema:"Number of messages to return (default: 50)"`
 }
 
 // RegisterListMessages registers the list_messages tool.
@@ -31,10 +31,10 @@ func RegisterListMessages(s *mcp.Server, c *client.Client) {
 
 // SearchMessagesArgs are the arguments for search_messages.
 type SearchMessagesArgs struct {
-	Query    string `json:"query" jsonschema:"description=Search query using Mailpit search syntax (e.g. from:user@example.com subject:test is:unread has:attachment)"`
-	Start    int    `json:"start,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
-	Limit    int    `json:"limit,omitempty" jsonschema:"description=Number of messages to return (default: 50)"`
-	Timezone string `json:"timezone,omitempty" jsonschema:"description=Timezone for before:/after: filters (e.g. America/New_York)"`
+	Query    string `json:"query" jsonschema:"Search query using Mailpit search syntax (e.g. from:user@example.com subject:test is:unread has:attachment)"`
+	Start    int    `json:"start,omitempty" jsonschema:"Pagination offset (default: 0)"`
+	Limit    int    `json:"limit,omitempty" jsonschema:"Number of messages to return (default: 50)"`
+	Timezone string `json:"timezone,omitempty" jsonschema:"Timezone for before:/after: filters (e.g. America/New_York)"`
 }
 
 // RegisterSearchMessages registers the search_messages tool.
@@ -56,7 +56,7 @@ func RegisterSearchMessages(s *mcp.Server, c *client.Client) {
 
 // GetMessageArgs are the arguments for get_message.
 type GetMessageArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessage registers the get_message tool.
@@ -78,7 +78,7 @@ func RegisterGetMessage(s *mcp.Server, c *client.Client) {
 
 // GetMessageHeadersArgs are the arguments for get_message_headers.
 type GetMessageHeadersArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageHeaders registers the get_message_headers tool.
@@ -104,7 +104,7 @@ func RegisterGetMessageHeaders(s *mcp.Server, c *client.Client) {
 
 // GetMessageSourceArgs are the arguments for get_message_source.
 type GetMessageSourceArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageSource registers the get_message_source tool.
@@ -126,7 +126,7 @@ func RegisterGetMessageSource(s *mcp.Server, c *client.Client) {
 
 // DeleteMessagesArgs are the arguments for delete_messages.
 type DeleteMessagesArgs struct {
-	IDs []string `json:"ids,omitempty" jsonschema:"description=Array of message IDs to delete. If empty, ALL messages will be deleted."`
+	IDs []string `json:"ids,omitempty" jsonschema:"Array of message IDs to delete. If empty, ALL messages will be deleted."`
 }
 
 // RegisterDeleteMessages registers the delete_messages tool.
@@ -148,8 +148,8 @@ func RegisterDeleteMessages(s *mcp.Server, c *client.Client) {
 
 // DeleteSearchArgs are the arguments for delete_search.
 type DeleteSearchArgs struct {
-	Query    string `json:"query" jsonschema:"description=Search query to match messages for deletion"`
-	Timezone string `json:"timezone,omitempty" jsonschema:"description=Timezone for before:/after: filters"`
+	Query    string `json:"query" jsonschema:"Search query to match messages for deletion"`
+	Timezone string `json:"timezone,omitempty" jsonschema:"Timezone for before:/after: filters"`
 }
 
 // RegisterDeleteSearch registers the delete_search tool.
@@ -171,9 +171,9 @@ func RegisterDeleteSearch(s *mcp.Server, c *client.Client) {
 
 // SetReadStatusArgs are the arguments for set_read_status.
 type SetReadStatusArgs struct {
-	IDs    []string `json:"ids,omitempty" jsonschema:"description=Array of message IDs to update. If empty and no search provided, updates all messages."`
-	Read   bool     `json:"read" jsonschema:"description=Read status to set (true=read, false=unread)"`
-	Search string   `json:"search,omitempty" jsonschema:"description=Optional search query to match messages instead of using IDs"`
+	IDs    []string `json:"ids,omitempty" jsonschema:"Array of message IDs to update. If empty and no search provided, updates all messages."`
+	Read   bool     `json:"read" jsonschema:"Read status to set (true=read, false=unread)"`
+	Search string   `json:"search,omitempty" jsonschema:"Optional search query to match messages instead of using IDs"`
 }
 
 // RegisterSetReadStatus registers the set_read_status tool.
