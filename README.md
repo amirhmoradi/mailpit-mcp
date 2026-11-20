@@ -6,7 +6,7 @@ A standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 This project provides an MCP server that connects AI assistants (Claude, Cursor, VS Code Copilot, etc.) to Mailpit's API, enabling natural language interaction with your email testing workflow.
 
-This fork supports the [2026-07-28 MCP revision](https://modelcontextprotocol.io/specification/2026-07-28) using the official Go SDK. It offers stdio and stateless Streamable HTTP. Clients configured for the old HTTP+SSE transport must switch to Streamable HTTP; the `/mcp` URL is unchanged.
+The server supports the [2026-07-28 MCP revision](https://modelcontextprotocol.io/specification/2026-07-28). It uses stdio or stateless Streamable HTTP. If your client uses HTTP+SSE, change its transport to Streamable HTTP. The `/mcp` URL stays the same.
 
 **Key Features:**
 - Browse, search, and analyze emails using natural language
@@ -67,7 +67,7 @@ docker compose up -d --build
 
 ```bash
 # Clone the repository
-git clone https://github.com/chetan/mailpit-mcp.git
+git clone https://github.com/amirhmoradi/mailpit-mcp.git
 cd mailpit-mcp
 
 # Build the binary
