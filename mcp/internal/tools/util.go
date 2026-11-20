@@ -9,8 +9,8 @@ import (
 )
 
 // textResult creates a text content result.
-func textResult(text string) *mcp.CallToolResultFor[any] {
-	return &mcp.CallToolResultFor[any]{
+func textResult(text string) *mcp.CallToolResult {
+	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{Text: text},
 		},
@@ -18,7 +18,7 @@ func textResult(text string) *mcp.CallToolResultFor[any] {
 }
 
 // jsonResult creates a JSON content result.
-func jsonResult(v any) (*mcp.CallToolResultFor[any], error) {
+func jsonResult(v any) (*mcp.CallToolResult, error) {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal result: %w", err)
@@ -27,8 +27,8 @@ func jsonResult(v any) (*mcp.CallToolResultFor[any], error) {
 }
 
 // errorResult creates an error result.
-func errorResult(err error) *mcp.CallToolResultFor[any] {
-	return &mcp.CallToolResultFor[any]{
+func errorResult(err error) *mcp.CallToolResult {
+	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{Text: fmt.Sprintf("Error: %v", err)},
 		},

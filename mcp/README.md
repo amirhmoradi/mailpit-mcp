@@ -45,7 +45,7 @@ docker run -d \
   --name mailpit-mcp \
   -e MAILPIT_URL=http://host.docker.internal:8025 \
   -e MCP_TRANSPORT=http \
-  -p 3000:3000 \
+  -p 127.0.0.1:3000:3000 \
   mailpit-mcp:local
 ```
 

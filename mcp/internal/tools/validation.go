@@ -11,7 +11,7 @@ import (
 
 // CheckHTMLArgs are the arguments for check_html.
 type CheckHTMLArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterCheckHTML registers the check_html tool.
@@ -19,22 +19,22 @@ func RegisterCheckHTML(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "check_html",
 		Description: "Check email HTML/CSS compatibility across different email clients (Outlook, Gmail, Apple Mail, etc.). Uses caniemail.com database.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[CheckHTMLArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args CheckHTMLArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.CheckHTML(ctx, params.Arguments.ID)
+		result, err := c.CheckHTML(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return formatHTMLCheckResult(result), nil
+		return formatHTMLCheckResult(result), nil, nil
 	})
 }
 
 // CheckLinksArgs are the arguments for check_links.
 type CheckLinksArgs struct {
-	ID     string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
-	Follow bool   `json:"follow,omitempty" jsonschema:"description=Follow redirects when checking links (default: false)"`
+	ID     string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
+	Follow bool   `json:"follow,omitempty" jsonschema:"Follow redirects when checking links (default: false)"`
 }
 
 // RegisterCheckLinks registers the check_links tool.
@@ -42,21 +42,21 @@ func RegisterCheckLinks(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "check_links",
 		Description: "Validate all links and images in a message. Checks HTTP status codes for each URL.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[CheckLinksArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args CheckLinksArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.CheckLinks(ctx, params.Arguments.ID, params.Arguments.Follow)
+		result, err := c.CheckLinks(ctx, args.ID, args.Follow)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return formatLinkCheckResult(result), nil
+		return formatLinkCheckResult(result), nil, nil
 	})
 }
 
 // CheckSpamArgs are the arguments for check_spam.
 type CheckSpamArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterCheckSpam registers the check_spam tool.
@@ -64,20 +64,20 @@ func RegisterCheckSpam(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "check_spam",
 		Description: "Run SpamAssassin analysis on a message. Returns spam score and triggered rules. Requires SpamAssassin to be enabled in Mailpit.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[CheckSpamArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args CheckSpamArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.CheckSpam(ctx, params.Arguments.ID)
+		result, err := c.CheckSpam(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return formatSpamCheckResult(result), nil
+		return formatSpamCheckResult(result), nil, nil
 	})
 }
 
 // formatHTMLCheckResult formats an HTML check result.
-func formatHTMLCheckResult(result *client.HTMLCheckResponse) *mcp.CallToolResultFor[any] {
+func formatHTMLCheckResult(result *client.HTMLCheckResponse) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	sb.WriteString("=== HTML Email Compatibility Check ===\n\n")
@@ -146,7 +146,7 @@ func formatHTMLCheckResult(result *client.HTMLCheckResponse) *mcp.CallToolResult
 }
 
 // formatLinkCheckResult formats a link check result.
-func formatLinkCheckResult(result *client.LinkCheckResponse) *mcp.CallToolResultFor[any] {
+func formatLinkCheckResult(result *client.LinkCheckResponse) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	sb.WriteString("=== Link Validation Results ===\n\n")
@@ -196,7 +196,7 @@ func formatLinkCheckResult(result *client.LinkCheckResponse) *mcp.CallToolResult
 }
 
 // formatSpamCheckResult formats a spam check result.
-func formatSpamCheckResult(result *client.SpamAssassinResponse) *mcp.CallToolResultFor[any] {
+func formatSpamCheckResult(result *client.SpamAssassinResponse) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	sb.WriteString("=== SpamAssassin Analysis ===\n\n")

@@ -11,7 +11,7 @@ import (
 
 // GetMessageHTMLArgs are the arguments for get_message_html.
 type GetMessageHTMLArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageHTML registers the get_message_html tool.
@@ -19,21 +19,21 @@ func RegisterGetMessageHTML(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_message_html",
 		Description: "Get the rendered HTML content of a message. Inline images are linked to the API. Returns 404 if message has no HTML part.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetMessageHTMLArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetMessageHTMLArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.GetMessageHTML(ctx, params.Arguments.ID)
+		result, err := c.GetMessageHTML(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return textResult(result), nil
+		return textResult(result), nil, nil
 	})
 }
 
 // GetMessageTextArgs are the arguments for get_message_text.
 type GetMessageTextArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageText registers the get_message_text tool.
@@ -41,25 +41,25 @@ func RegisterGetMessageText(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_message_text",
 		Description: "Get the plain text content of a message",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetMessageTextArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetMessageTextArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.GetMessageText(ctx, params.Arguments.ID)
+		result, err := c.GetMessageText(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
 		if result == "" {
-			return textResult("(Message has no text content)"), nil
+			return textResult("(Message has no text content)"), nil, nil
 		}
-		return textResult(result), nil
+		return textResult(result), nil, nil
 	})
 }
 
 // GetAttachmentArgs are the arguments for get_attachment.
 type GetAttachmentArgs struct {
-	MessageID string `json:"message_id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
-	PartID    string `json:"part_id" jsonschema:"description=Attachment part ID (from message details)"`
+	MessageID string `json:"message_id" jsonschema:"Message database ID or 'latest' for the most recent message"`
+	PartID    string `json:"part_id" jsonschema:"Attachment part ID (from message details)"`
 }
 
 // RegisterGetAttachment registers the get_attachment tool.
@@ -67,16 +67,16 @@ func RegisterGetAttachment(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_attachment",
 		Description: "Download an attachment from a message. Returns base64-encoded content for binary files.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetAttachmentArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.MessageID == "" {
-			return errorResult(fmt.Errorf("message_id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetAttachmentArgs) (*mcp.CallToolResult, any, error) {
+		if args.MessageID == "" {
+			return errorResult(fmt.Errorf("message_id is required")), nil, nil
 		}
-		if params.Arguments.PartID == "" {
-			return errorResult(fmt.Errorf("part_id is required")), nil
+		if args.PartID == "" {
+			return errorResult(fmt.Errorf("part_id is required")), nil, nil
 		}
-		data, err := c.GetAttachment(ctx, params.Arguments.MessageID, params.Arguments.PartID)
+		data, err := c.GetAttachment(ctx, args.MessageID, args.PartID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
 
 		// Check if content is text-like (simple heuristic)
@@ -89,12 +89,12 @@ func RegisterGetAttachment(s *mcp.Server, c *client.Client) {
 		}
 
 		if isText {
-			return textResult(string(data)), nil
+			return textResult(string(data)), nil, nil
 		}
 
 		// Return base64 for binary content
 		encoded := base64.StdEncoding.EncodeToString(data)
-		return textResult(fmt.Sprintf("Base64-encoded attachment (%d bytes):\n%s", len(data), encoded)), nil
+		return textResult(fmt.Sprintf("Base64-encoded attachment (%d bytes):\n%s", len(data), encoded)), nil, nil
 	})
 }
 

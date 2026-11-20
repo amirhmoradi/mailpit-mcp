@@ -6,6 +6,8 @@ A standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 This project provides an MCP server that connects AI assistants (Claude, Cursor, VS Code Copilot, etc.) to Mailpit's API, enabling natural language interaction with your email testing workflow.
 
+This fork supports the [2026-07-28 MCP revision](https://modelcontextprotocol.io/specification/2026-07-28) using the official Go SDK. It offers stdio and stateless Streamable HTTP. Clients configured for the old HTTP+SSE transport must switch to Streamable HTTP; the `/mcp` URL is unchanged.
+
 **Key Features:**
 - Browse, search, and analyze emails using natural language
 - Check HTML compatibility across email clients
@@ -17,54 +19,55 @@ This project provides an MCP server that connects AI assistants (Claude, Cursor,
 ## Prerequisites
 
 - A running [Mailpit](https://mailpit.axllent.org/) instance (the MCP server connects to Mailpit via its HTTP API)
-- Go 1.24+ (if building from source)
+- Go 1.25+ (if building from source)
 
 ## Installation
 
 ### Option 1: Docker (Recommended)
 
 ```bash
+docker build -t mailpit-mcp:local ./mcp
 docker run -d \
   --name mailpit-mcp \
   -e MAILPIT_URL=http://your-mailpit-host:8025 \
   -e MCP_TRANSPORT=http \
-  -p 3000:3000 \
-  ghcr.io/amirhmoradi/mailpit-mcp:latest
+  -p 127.0.0.1:3000:3000 \
+  mailpit-mcp:local
 ```
 
 ### Option 2: Docker Compose
 
-Create a `docker-compose.yml`:
+Create a `compose.yml` in the cloned repository:
 
 ```yaml
 services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
 
   mailpit-mcp:
-    image: ghcr.io/amirhmoradi/mailpit-mcp:latest
+    build: ./mcp
     environment:
       MAILPIT_URL: http://mailpit:8025
       MCP_TRANSPORT: http
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - mailpit
 ```
 
 Run with:
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 ### Option 3: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/amirhmoradi/mailpit-mcp.git
+git clone https://github.com/chetan/mailpit-mcp.git
 cd mailpit-mcp
 
 # Build the binary
@@ -73,12 +76,6 @@ go build -o mailpit-mcp-server ./cmd/mailpit-mcp-server
 
 # Run the server
 MAILPIT_URL=http://localhost:8025 ./mailpit-mcp-server
-```
-
-### Option 4: Go Install
-
-```bash
-go install github.com/amirhmoradi/mailpit-mcp/cmd/mailpit-mcp-server@latest
 ```
 
 ## Configuration
@@ -91,10 +88,12 @@ Configure the MCP server using environment variables:
 | `MAILPIT_AUTH_USER` | Basic auth username (if Mailpit requires auth) | (none) |
 | `MAILPIT_AUTH_PASS` | Basic auth password | (none) |
 | `MAILPIT_TIMEOUT` | Request timeout in seconds | `30` |
-| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
-| `MCP_HTTP_HOST` | HTTP server bind address | `0.0.0.0` |
+| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` (Streamable HTTP) | `stdio` (`http` in Docker) |
+| `MCP_HTTP_HOST` | HTTP listen address | `127.0.0.1` (`0.0.0.0` inside Docker) |
 | `MCP_HTTP_PORT` | HTTP server port | `3000` |
 | `MCP_LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` | `info` |
+
+The MCP endpoint has no authentication of its own and can read and delete captured mail. Publish the Docker port only on a loopback interface. The `/mcp` route requires a loopback `Host` header and rejects cross-origin browser requests; these checks are not authentication.
 
 ## Usage with AI Tools
 
@@ -127,8 +126,9 @@ Or if using Docker:
     "mailpit": {
       "command": "docker",
       "args": ["run", "-i", "--rm",
+        "-e", "MCP_TRANSPORT=stdio",
         "-e", "MAILPIT_URL=http://host.docker.internal:8025",
-        "ghcr.io/amirhmoradi/mailpit-mcp:latest"]
+        "mailpit-mcp:local"]
     }
   }
 }
@@ -143,13 +143,14 @@ For IDE integration, run the MCP server in HTTP mode:
 MAILPIT_URL=http://localhost:8025 MCP_TRANSPORT=http ./mailpit-mcp-server
 ```
 
-Then add to your IDE's MCP configuration:
+Connect your IDE to `http://127.0.0.1:3000/mcp` using Streamable HTTP. For example, in VS Code's `.vscode/mcp.json`:
 
 ```json
 {
-  "mcp.servers": {
+  "servers": {
     "mailpit": {
-      "url": "http://localhost:3000/mcp"
+      "type": "http",
+      "url": "http://127.0.0.1:3000/mcp"
     }
   }
 }

@@ -25,7 +25,7 @@ func registerAnalyzeLatestEmail(s *mcp.Server) {
 	s.AddPrompt(&mcp.Prompt{
 		Name:        "analyze_latest_email",
 		Description: "Analyze the most recent email for potential issues and provide a comprehensive review",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 		return &mcp.GetPromptResult{
 			Description: "Analyze the latest email in Mailpit",
 			Messages: []*mcp.PromptMessage{{
@@ -71,9 +71,9 @@ func registerDebugEmailDelivery(s *mcp.Server) {
 			Description: "Message ID to debug (optional, defaults to 'latest')",
 			Required:    false,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 		messageID := "latest"
-		if id, ok := params.Arguments["message_id"]; ok && id != "" {
+		if id, ok := req.Params.Arguments["message_id"]; ok && id != "" {
 			messageID = id
 		}
 
@@ -129,9 +129,9 @@ func registerCheckEmailQuality(s *mcp.Server) {
 			Description: "Message ID to check (optional, defaults to 'latest')",
 			Required:    false,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 		messageID := "latest"
-		if id, ok := params.Arguments["message_id"]; ok && id != "" {
+		if id, ok := req.Params.Arguments["message_id"]; ok && id != "" {
 			messageID = id
 		}
 
@@ -198,8 +198,8 @@ func registerSearchEmails(s *mcp.Server) {
 			Description: "What you're looking for (e.g., 'emails from john about invoices last week')",
 			Required:    true,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
-		criteria := params.Arguments["criteria"]
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+		criteria := req.Params.Arguments["criteria"]
 
 		return &mcp.GetPromptResult{
 			Description: "Search for emails matching criteria",
@@ -247,8 +247,8 @@ func registerComposeTestEmail(s *mcp.Server) {
 			Description: "Type of email: welcome, notification, newsletter, transactional, plain, or custom description",
 			Required:    true,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
-		scenario := params.Arguments["scenario"]
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+		scenario := req.Params.Arguments["scenario"]
 
 		return &mcp.GetPromptResult{
 			Description: fmt.Sprintf("Compose test email for scenario: %s", scenario),
@@ -301,9 +301,9 @@ func registerAnalyzeEmailHeaders(s *mcp.Server) {
 			Description: "Message ID to analyze (optional, defaults to 'latest')",
 			Required:    false,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 		messageID := "latest"
-		if id, ok := params.Arguments["message_id"]; ok && id != "" {
+		if id, ok := req.Params.Arguments["message_id"]; ok && id != "" {
 			messageID = id
 		}
 
@@ -379,9 +379,9 @@ func registerCompareEmails(s *mcp.Server) {
 				Required:    true,
 			},
 		},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
-		id1 := params.Arguments["id1"]
-		id2 := params.Arguments["id2"]
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+		id1 := req.Params.Arguments["id1"]
+		id2 := req.Params.Arguments["id2"]
 
 		return &mcp.GetPromptResult{
 			Description: fmt.Sprintf("Compare messages %s and %s", id1, id2),
@@ -447,9 +447,9 @@ func registerSummarizeInbox(s *mcp.Server) {
 			Description: "Number of recent messages to include in detail (default: 10)",
 			Required:    false,
 		}},
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.GetPromptParams) (*mcp.GetPromptResult, error) {
+	}, func(ctx context.Context, req *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 		limit := "10"
-		if l, ok := params.Arguments["limit"]; ok && l != "" {
+		if l, ok := req.Params.Arguments["limit"]; ok && l != "" {
 			limit = l
 		}
 

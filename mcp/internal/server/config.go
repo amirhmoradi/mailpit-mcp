@@ -32,7 +32,7 @@ func DefaultConfig() *Config {
 		MailpitURL: "http://localhost:8025",
 		Timeout:    30 * time.Second,
 		Transport:  "stdio",
-		HTTPHost:   "0.0.0.0",
+		HTTPHost:   "127.0.0.1",
 		HTTPPort:   3000,
 		LogLevel:   "info",
 	}
