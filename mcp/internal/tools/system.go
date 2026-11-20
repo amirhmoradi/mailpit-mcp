@@ -15,12 +15,12 @@ func RegisterGetInfo(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_info",
 		Description: "Get Mailpit server information including version, database stats, message counts, and runtime statistics",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[EmptyArgs]) (*mcp.CallToolResultFor[any], error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ EmptyArgs) (*mcp.CallToolResult, any, error) {
 		result, err := c.GetInfo(ctx)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return formatAppInfo(result), nil
+		return formatAppInfo(result), nil, nil
 	})
 }
 
@@ -29,17 +29,17 @@ func RegisterGetWebUIConfig(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_webui_config",
 		Description: "Get Mailpit web UI configuration including enabled features (SpamAssassin, Chaos, relay settings)",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[EmptyArgs]) (*mcp.CallToolResultFor[any], error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ EmptyArgs) (*mcp.CallToolResult, any, error) {
 		result, err := c.GetWebUIConfig(ctx)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return formatWebUIConfig(result), nil
+		return formatWebUIConfig(result), nil, nil
 	})
 }
 
 // formatAppInfo formats application information.
-func formatAppInfo(info *client.AppInfo) *mcp.CallToolResultFor[any] {
+func formatAppInfo(info *client.AppInfo) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	sb.WriteString("=== Mailpit Server Information ===\n\n")
@@ -81,7 +81,7 @@ func formatAppInfo(info *client.AppInfo) *mcp.CallToolResultFor[any] {
 }
 
 // formatWebUIConfig formats web UI configuration.
-func formatWebUIConfig(config *client.WebUIConfig) *mcp.CallToolResultFor[any] {
+func formatWebUIConfig(config *client.WebUIConfig) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	sb.WriteString("=== Mailpit Configuration ===\n\n")

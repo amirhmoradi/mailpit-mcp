@@ -6,6 +6,8 @@ A standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 This project provides an MCP server that connects AI assistants (Claude, Cursor, VS Code Copilot, etc.) to Mailpit's API, enabling natural language interaction with your email testing workflow.
 
+The server supports the [2026-07-28 MCP revision](https://modelcontextprotocol.io/specification/2026-07-28). It uses stdio or stateless Streamable HTTP. If your client uses HTTP+SSE, change its transport to Streamable HTTP. The `/mcp` URL stays the same.
+
 **Key Features:**
 - Browse, search, and analyze emails using natural language
 - Check HTML compatibility across email clients
@@ -17,47 +19,48 @@ This project provides an MCP server that connects AI assistants (Claude, Cursor,
 ## Prerequisites
 
 - A running [Mailpit](https://mailpit.axllent.org/) instance (the MCP server connects to Mailpit via its HTTP API)
-- Go 1.24+ (if building from source)
+- Go 1.25+ (if building from source)
 
 ## Installation
 
 ### Option 1: Docker (Recommended)
 
 ```bash
+docker build -t mailpit-mcp:local ./mcp
 docker run -d \
   --name mailpit-mcp \
   -e MAILPIT_URL=http://your-mailpit-host:8025 \
   -e MCP_TRANSPORT=http \
-  -p 3000:3000 \
-  ghcr.io/amirhmoradi/mailpit-mcp:latest
+  -p 127.0.0.1:3000:3000 \
+  mailpit-mcp:local
 ```
 
 ### Option 2: Docker Compose
 
-Create a `docker-compose.yml`:
+Create a `compose.yml` in the cloned repository:
 
 ```yaml
 services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
 
   mailpit-mcp:
-    image: ghcr.io/amirhmoradi/mailpit-mcp:latest
+    build: ./mcp
     environment:
       MAILPIT_URL: http://mailpit:8025
       MCP_TRANSPORT: http
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - mailpit
 ```
 
 Run with:
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 ### Option 3: Build from Source
@@ -75,12 +78,6 @@ go build -o mailpit-mcp-server ./cmd/mailpit-mcp-server
 MAILPIT_URL=http://localhost:8025 ./mailpit-mcp-server
 ```
 
-### Option 4: Go Install
-
-```bash
-go install github.com/amirhmoradi/mailpit-mcp/cmd/mailpit-mcp-server@latest
-```
-
 ## Configuration
 
 Configure the MCP server using environment variables:
@@ -91,10 +88,13 @@ Configure the MCP server using environment variables:
 | `MAILPIT_AUTH_USER` | Basic auth username (if Mailpit requires auth) | (none) |
 | `MAILPIT_AUTH_PASS` | Basic auth password | (none) |
 | `MAILPIT_TIMEOUT` | Request timeout in seconds | `30` |
-| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
-| `MCP_HTTP_HOST` | HTTP server bind address | `0.0.0.0` |
+| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` (Streamable HTTP) | `stdio` (`http` in Docker) |
+| `MCP_HTTP_HOST` | HTTP listen address | `127.0.0.1` (`0.0.0.0` inside Docker) |
 | `MCP_HTTP_PORT` | HTTP server port | `3000` |
+| `MCP_HTTP_ALLOWED_HOSTS` | Comma-separated extra Host names or IPs (without ports), e.g. `testbox.example,192.0.2.10` | none (loopback only) |
 | `MCP_LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` | `info` |
+
+The MCP endpoint has no authentication of its own and can read and delete captured mail. Publish the Docker port on loopback by default. For intentional LAN access, restrict the listener with a firewall and add your exact LAN IP or name to `MCP_HTTP_ALLOWED_HOSTS`. The `/mcp` route checks the request's `Host` and rejects cross-origin browser calls; neither check authenticates a client.
 
 ## Usage with AI Tools
 
@@ -127,8 +127,9 @@ Or if using Docker:
     "mailpit": {
       "command": "docker",
       "args": ["run", "-i", "--rm",
+        "-e", "MCP_TRANSPORT=stdio",
         "-e", "MAILPIT_URL=http://host.docker.internal:8025",
-        "ghcr.io/amirhmoradi/mailpit-mcp:latest"]
+        "mailpit-mcp:local"]
     }
   }
 }
@@ -143,13 +144,14 @@ For IDE integration, run the MCP server in HTTP mode:
 MAILPIT_URL=http://localhost:8025 MCP_TRANSPORT=http ./mailpit-mcp-server
 ```
 
-Then add to your IDE's MCP configuration:
+Connect your IDE to `http://127.0.0.1:3000/mcp` using Streamable HTTP. For example, in VS Code's `.vscode/mcp.json`:
 
 ```json
 {
-  "mcp.servers": {
+  "servers": {
     "mailpit": {
-      "url": "http://localhost:3000/mcp"
+      "type": "http",
+      "url": "http://127.0.0.1:3000/mcp"
     }
   }
 }

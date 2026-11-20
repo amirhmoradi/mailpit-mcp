@@ -5,10 +5,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/amirhmoradi/mailpit-mcp/internal/server"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -54,54 +58,74 @@ func runSTDIO(s *mcp.Server) {
 		cancel()
 	}()
 
-	if err := s.Run(ctx, mcp.NewStdioTransport()); err != nil {
+	if err := s.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
 
-// runHTTP runs the MCP server over HTTP with SSE.
-func runHTTP(s *mcp.Server, cfg *server.Config) {
-	log.Printf("Starting Mailpit MCP server (HTTP transport, version %s)", server.Version)
-	log.Printf("Listening on %s:%d", cfg.HTTPHost, cfg.HTTPPort)
-	log.Printf("Connecting to Mailpit at %s", cfg.MailpitURL)
-
-	// Create SSE handler
-	handler := mcp.NewSSEHandler(func(r *http.Request) *mcp.Server {
+func httpHandler(s *mcp.Server, allowedHosts []string) http.Handler {
+	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server {
 		return s
+	}, &mcp.StreamableHTTPOptions{
+		Stateless:                  true,
+		JSONResponse:               true,
+		MaxRequestBodyBytes:        64 << 20,
+		DisableLocalhostProtection: true, // replaced by the explicit Host check below
 	})
+	protected := http.NewCrossOriginProtection().Handler(handler)
 
-	// Set up routes
 	mux := http.NewServeMux()
-	mux.Handle("/mcp", handler)
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	mux.HandleFunc("/mcp", func(w http.ResponseWriter, r *http.Request) {
+		// Docker can deliver published-port traffic via a bridge address.
+		host, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			host = r.Host
+		}
+		host = strings.Trim(host, "[]")
+		if strings.EqualFold(host, "localhost") || net.ParseIP(host).IsLoopback() {
+			protected.ServeHTTP(w, r)
+			return
+		}
+		for _, allowed := range allowedHosts {
+			allowed = strings.TrimSpace(allowed)
+			if allowed != "" && strings.EqualFold(host, allowed) {
+				protected.ServeHTTP(w, r)
+				return
+			}
+		}
+		http.Error(w, "Forbidden: unrecognized Host", http.StatusForbidden)
+	})
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, "ok")
 	})
+	return mux
+}
 
-	// Create server
-	addr := fmt.Sprintf("%s:%d", cfg.HTTPHost, cfg.HTTPPort)
+// runHTTP runs the server over stateless Streamable HTTP.
+func runHTTP(s *mcp.Server, cfg *server.Config) {
+	addr := net.JoinHostPort(cfg.HTTPHost, strconv.Itoa(cfg.HTTPPort))
+	log.Printf("Starting Mailpit MCP server (Streamable HTTP, version %s) on %s", server.Version, addr)
 	httpServer := &http.Server{
-		Addr:    addr,
-		Handler: mux,
+		Addr:              addr,
+		Handler:           httpHandler(s, cfg.HTTPAllowedHosts),
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	// Handle shutdown signals
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	done := make(chan struct{})
 	go func() {
-		<-sigCh
-		log.Println("Shutting down HTTP server...")
-		if err := httpServer.Shutdown(ctx); err != nil {
-			log.Printf("HTTP server shutdown error: %v", err)
+		defer close(done)
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			httpServer.Close()
 		}
-		cancel()
 	}()
 
-	// Start server
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("HTTP server error: %v", err)
 	}
+	<-done
 }

@@ -11,8 +11,8 @@ import (
 
 // ListMessagesArgs are the arguments for list_messages.
 type ListMessagesArgs struct {
-	Start int `json:"start,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
-	Limit int `json:"limit,omitempty" jsonschema:"description=Number of messages to return (default: 50)"`
+	Start int `json:"start,omitempty" jsonschema:"Pagination offset (default: 0)"`
+	Limit int `json:"limit,omitempty" jsonschema:"Number of messages to return (default: 50)"`
 }
 
 // RegisterListMessages registers the list_messages tool.
@@ -20,21 +20,21 @@ func RegisterListMessages(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_messages",
 		Description: "List messages from Mailpit inbox with pagination, ordered from newest to oldest",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[ListMessagesArgs]) (*mcp.CallToolResultFor[any], error) {
-		result, err := c.ListMessages(ctx, params.Arguments.Start, params.Arguments.Limit)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args ListMessagesArgs) (*mcp.CallToolResult, any, error) {
+		result, err := c.ListMessages(ctx, args.Start, args.Limit)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return jsonResultWithSummary(result), nil
+		return jsonResultWithSummary(result), nil, nil
 	})
 }
 
 // SearchMessagesArgs are the arguments for search_messages.
 type SearchMessagesArgs struct {
-	Query    string `json:"query" jsonschema:"description=Search query using Mailpit search syntax (e.g. from:user@example.com subject:test is:unread has:attachment)"`
-	Start    int    `json:"start,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
-	Limit    int    `json:"limit,omitempty" jsonschema:"description=Number of messages to return (default: 50)"`
-	Timezone string `json:"timezone,omitempty" jsonschema:"description=Timezone for before:/after: filters (e.g. America/New_York)"`
+	Query    string `json:"query" jsonschema:"Search query using Mailpit search syntax (e.g. from:user@example.com subject:test is:unread has:attachment)"`
+	Start    int    `json:"start,omitempty" jsonschema:"Pagination offset (default: 0)"`
+	Limit    int    `json:"limit,omitempty" jsonschema:"Number of messages to return (default: 50)"`
+	Timezone string `json:"timezone,omitempty" jsonschema:"Timezone for before:/after: filters (e.g. America/New_York)"`
 }
 
 // RegisterSearchMessages registers the search_messages tool.
@@ -42,21 +42,21 @@ func RegisterSearchMessages(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "search_messages",
 		Description: "Search messages using Mailpit search syntax. Supports: from:, to:, subject:, message-id:, tag:, is:read/unread, has:attachment, before:, after:",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[SearchMessagesArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.Query == "" {
-			return errorResult(fmt.Errorf("query is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args SearchMessagesArgs) (*mcp.CallToolResult, any, error) {
+		if args.Query == "" {
+			return errorResult(fmt.Errorf("query is required")), nil, nil
 		}
-		result, err := c.SearchMessages(ctx, params.Arguments.Query, params.Arguments.Start, params.Arguments.Limit, params.Arguments.Timezone)
+		result, err := c.SearchMessages(ctx, args.Query, args.Start, args.Limit, args.Timezone)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return jsonResultWithSummary(result), nil
+		return jsonResultWithSummary(result), nil, nil
 	})
 }
 
 // GetMessageArgs are the arguments for get_message.
 type GetMessageArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessage registers the get_message tool.
@@ -64,21 +64,21 @@ func RegisterGetMessage(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_message",
 		Description: "Get full details of a specific message including headers, body, and attachments. Marks the message as read.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetMessageArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetMessageArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.GetMessage(ctx, params.Arguments.ID)
+		result, err := c.GetMessage(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return jsonResultWithMessage(result), nil
+		return jsonResultWithMessage(result), nil, nil
 	})
 }
 
 // GetMessageHeadersArgs are the arguments for get_message_headers.
 type GetMessageHeadersArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageHeaders registers the get_message_headers tool.
@@ -86,25 +86,25 @@ func RegisterGetMessageHeaders(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_message_headers",
 		Description: "Get all headers of a specific message as key-value pairs",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetMessageHeadersArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetMessageHeadersArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.GetMessageHeaders(ctx, params.Arguments.ID)
+		result, err := c.GetMessageHeaders(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
 		r, err := jsonResult(result)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return r, nil
+		return r, nil, nil
 	})
 }
 
 // GetMessageSourceArgs are the arguments for get_message_source.
 type GetMessageSourceArgs struct {
-	ID string `json:"id" jsonschema:"description=Message database ID or 'latest' for the most recent message"`
+	ID string `json:"id" jsonschema:"Message database ID or 'latest' for the most recent message"`
 }
 
 // RegisterGetMessageSource registers the get_message_source tool.
@@ -112,21 +112,21 @@ func RegisterGetMessageSource(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_message_source",
 		Description: "Get the raw RFC 2822 source of a message (full email including headers)",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[GetMessageSourceArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.ID == "" {
-			return errorResult(fmt.Errorf("id is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetMessageSourceArgs) (*mcp.CallToolResult, any, error) {
+		if args.ID == "" {
+			return errorResult(fmt.Errorf("id is required")), nil, nil
 		}
-		result, err := c.GetMessageSource(ctx, params.Arguments.ID)
+		result, err := c.GetMessageSource(ctx, args.ID)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return textResult(result), nil
+		return textResult(result), nil, nil
 	})
 }
 
 // DeleteMessagesArgs are the arguments for delete_messages.
 type DeleteMessagesArgs struct {
-	IDs []string `json:"ids,omitempty" jsonschema:"description=Array of message IDs to delete. If empty, ALL messages will be deleted."`
+	IDs []string `json:"ids,omitempty" jsonschema:"Array of message IDs to delete. If empty, ALL messages will be deleted."`
 }
 
 // RegisterDeleteMessages registers the delete_messages tool.
@@ -134,22 +134,22 @@ func RegisterDeleteMessages(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "delete_messages",
 		Description: "Delete specific messages by ID, or all messages if no IDs provided. WARNING: Deletion is permanent.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[DeleteMessagesArgs]) (*mcp.CallToolResultFor[any], error) {
-		err := c.DeleteMessages(ctx, params.Arguments.IDs)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args DeleteMessagesArgs) (*mcp.CallToolResult, any, error) {
+		err := c.DeleteMessages(ctx, args.IDs)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		if len(params.Arguments.IDs) == 0 {
-			return textResult("All messages deleted successfully"), nil
+		if len(args.IDs) == 0 {
+			return textResult("All messages deleted successfully"), nil, nil
 		}
-		return textResult(fmt.Sprintf("Deleted %d message(s) successfully", len(params.Arguments.IDs))), nil
+		return textResult(fmt.Sprintf("Deleted %d message(s) successfully", len(args.IDs))), nil, nil
 	})
 }
 
 // DeleteSearchArgs are the arguments for delete_search.
 type DeleteSearchArgs struct {
-	Query    string `json:"query" jsonschema:"description=Search query to match messages for deletion"`
-	Timezone string `json:"timezone,omitempty" jsonschema:"description=Timezone for before:/after: filters"`
+	Query    string `json:"query" jsonschema:"Search query to match messages for deletion"`
+	Timezone string `json:"timezone,omitempty" jsonschema:"Timezone for before:/after: filters"`
 }
 
 // RegisterDeleteSearch registers the delete_search tool.
@@ -157,23 +157,23 @@ func RegisterDeleteSearch(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "delete_search",
 		Description: "Delete all messages matching a search query. WARNING: Deletion is permanent.",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[DeleteSearchArgs]) (*mcp.CallToolResultFor[any], error) {
-		if params.Arguments.Query == "" {
-			return errorResult(fmt.Errorf("query is required")), nil
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args DeleteSearchArgs) (*mcp.CallToolResult, any, error) {
+		if args.Query == "" {
+			return errorResult(fmt.Errorf("query is required")), nil, nil
 		}
-		err := c.DeleteSearch(ctx, params.Arguments.Query, params.Arguments.Timezone)
+		err := c.DeleteSearch(ctx, args.Query, args.Timezone)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
-		return textResult(fmt.Sprintf("Deleted messages matching query: %s", params.Arguments.Query)), nil
+		return textResult(fmt.Sprintf("Deleted messages matching query: %s", args.Query)), nil, nil
 	})
 }
 
 // SetReadStatusArgs are the arguments for set_read_status.
 type SetReadStatusArgs struct {
-	IDs    []string `json:"ids,omitempty" jsonschema:"description=Array of message IDs to update. If empty and no search provided, updates all messages."`
-	Read   bool     `json:"read" jsonschema:"description=Read status to set (true=read, false=unread)"`
-	Search string   `json:"search,omitempty" jsonschema:"description=Optional search query to match messages instead of using IDs"`
+	IDs    []string `json:"ids,omitempty" jsonschema:"Array of message IDs to update. If empty and no search provided, updates all messages."`
+	Read   bool     `json:"read" jsonschema:"Read status to set (true=read, false=unread)"`
+	Search string   `json:"search,omitempty" jsonschema:"Optional search query to match messages instead of using IDs"`
 }
 
 // RegisterSetReadStatus registers the set_read_status tool.
@@ -181,21 +181,21 @@ func RegisterSetReadStatus(s *mcp.Server, c *client.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "set_read_status",
 		Description: "Mark messages as read or unread by IDs, search query, or all messages",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[SetReadStatusArgs]) (*mcp.CallToolResultFor[any], error) {
-		err := c.SetReadStatus(ctx, params.Arguments.IDs, params.Arguments.Read, params.Arguments.Search)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args SetReadStatusArgs) (*mcp.CallToolResult, any, error) {
+		err := c.SetReadStatus(ctx, args.IDs, args.Read, args.Search)
 		if err != nil {
-			return errorResult(err), nil
+			return errorResult(err), nil, nil
 		}
 		status := "read"
-		if !params.Arguments.Read {
+		if !args.Read {
 			status = "unread"
 		}
-		return textResult(fmt.Sprintf("Messages marked as %s", status)), nil
+		return textResult(fmt.Sprintf("Messages marked as %s", status)), nil, nil
 	})
 }
 
 // jsonResultWithSummary formats a MessagesSummary result.
-func jsonResultWithSummary(result *client.MessagesSummary) *mcp.CallToolResultFor[any] {
+func jsonResultWithSummary(result *client.MessagesSummary) *mcp.CallToolResult {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Found %d messages (%d unread) out of %d total\n\n",
 		result.MessagesCount, result.MessagesUnreadCount, result.Total))
@@ -226,7 +226,7 @@ func jsonResultWithSummary(result *client.MessagesSummary) *mcp.CallToolResultFo
 }
 
 // jsonResultWithMessage formats a Message result.
-func jsonResultWithMessage(msg *client.Message) *mcp.CallToolResultFor[any] {
+func jsonResultWithMessage(msg *client.Message) *mcp.CallToolResult {
 	var sb strings.Builder
 
 	// Header section

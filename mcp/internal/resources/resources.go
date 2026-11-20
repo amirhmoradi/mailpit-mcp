@@ -26,7 +26,7 @@ func registerInfoResource(s *mcp.Server, c *client.Client) {
 		Name:        "Mailpit Server Info",
 		Description: "Current Mailpit server information and statistics",
 		MIMEType:    "application/json",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.ReadResourceParams) (*mcp.ReadResourceResult, error) {
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
 		info, err := c.GetInfo(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get server info: %w", err)
@@ -39,7 +39,7 @@ func registerInfoResource(s *mcp.Server, c *client.Client) {
 
 		return &mcp.ReadResourceResult{
 			Contents: []*mcp.ResourceContents{{
-				URI:      params.URI,
+				URI:      req.Params.URI,
 				MIMEType: "application/json",
 				Text:     string(data),
 			}},
@@ -54,7 +54,7 @@ func registerLatestMessageResource(s *mcp.Server, c *client.Client) {
 		Name:        "Latest Message",
 		Description: "Summary of the most recent email message",
 		MIMEType:    "text/plain",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.ReadResourceParams) (*mcp.ReadResourceResult, error) {
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
 		msg, err := c.GetMessage(ctx, "latest")
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest message: %w", err)
@@ -101,7 +101,7 @@ func registerLatestMessageResource(s *mcp.Server, c *client.Client) {
 
 		return &mcp.ReadResourceResult{
 			Contents: []*mcp.ResourceContents{{
-				URI:      params.URI,
+				URI:      req.Params.URI,
 				MIMEType: "text/plain",
 				Text:     sb.String(),
 			}},
@@ -116,7 +116,7 @@ func registerTagsResource(s *mcp.Server, c *client.Client) {
 		Name:        "Message Tags",
 		Description: "All current message tags",
 		MIMEType:    "application/json",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.ReadResourceParams) (*mcp.ReadResourceResult, error) {
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
 		tags, err := c.ListTags(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tags: %w", err)
@@ -129,7 +129,7 @@ func registerTagsResource(s *mcp.Server, c *client.Client) {
 
 		return &mcp.ReadResourceResult{
 			Contents: []*mcp.ResourceContents{{
-				URI:      params.URI,
+				URI:      req.Params.URI,
 				MIMEType: "application/json",
 				Text:     string(data),
 			}},
@@ -144,7 +144,7 @@ func registerConfigResource(s *mcp.Server, c *client.Client) {
 		Name:        "Mailpit Configuration",
 		Description: "Current Mailpit configuration and enabled features",
 		MIMEType:    "application/json",
-	}, func(ctx context.Context, ss *mcp.ServerSession, params *mcp.ReadResourceParams) (*mcp.ReadResourceResult, error) {
+	}, func(ctx context.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
 		config, err := c.GetWebUIConfig(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get config: %w", err)
@@ -157,7 +157,7 @@ func registerConfigResource(s *mcp.Server, c *client.Client) {
 
 		return &mcp.ReadResourceResult{
 			Contents: []*mcp.ResourceContents{{
-				URI:      params.URI,
+				URI:      req.Params.URI,
 				MIMEType: "application/json",
 				Text:     string(data),
 			}},
