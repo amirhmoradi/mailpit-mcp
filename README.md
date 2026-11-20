@@ -91,9 +91,10 @@ Configure the MCP server using environment variables:
 | `MCP_TRANSPORT` | Transport mode: `stdio` or `http` (Streamable HTTP) | `stdio` (`http` in Docker) |
 | `MCP_HTTP_HOST` | HTTP listen address | `127.0.0.1` (`0.0.0.0` inside Docker) |
 | `MCP_HTTP_PORT` | HTTP server port | `3000` |
+| `MCP_HTTP_ALLOWED_HOSTS` | Comma-separated extra Host names or IPs (without ports), e.g. `testbox.example,192.0.2.10` | none (loopback only) |
 | `MCP_LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` | `info` |
 
-The MCP endpoint has no authentication of its own and can read and delete captured mail. Publish the Docker port only on a loopback interface. The `/mcp` route requires a loopback `Host` header and rejects cross-origin browser requests; these checks are not authentication.
+The MCP endpoint has no authentication of its own and can read and delete captured mail. Publish the Docker port on loopback by default. For intentional LAN access, restrict the listener with a firewall and add your exact LAN IP or name to `MCP_HTTP_ALLOWED_HOSTS`. The `/mcp` route checks the request's `Host` and rejects cross-origin browser calls; neither check authenticates a client.
 
 ## Usage with AI Tools
 

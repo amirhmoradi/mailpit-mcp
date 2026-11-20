@@ -24,7 +24,7 @@ func TestStreamableHTTP(t *testing.T) {
 	}))
 	defer mailpit.Close()
 	c := client.New(client.Config{BaseURL: mailpit.URL, Timeout: time.Second})
-	httpServer := httptest.NewServer(httpHandler(server.New(c)))
+	httpServer := httptest.NewServer(httpHandler(server.New(c), nil))
 	defer httpServer.Close()
 
 	for _, version := range []string{"2026-07-28", "2025-11-25"} {
@@ -66,7 +66,7 @@ func TestStreamableHTTP(t *testing.T) {
 }
 
 func TestMCPHTTPRejectsUntrustedBrowserRequests(t *testing.T) {
-	handler := httpHandler(server.New(client.New(client.Config{})))
+	handler := httpHandler(server.New(client.New(client.Config{})), nil)
 	for _, tc := range []struct{ host, origin string }{
 		{host: "untrusted.example:3000"},
 		{host: "127.0.0.1:3000", origin: "https://untrusted.example"},
@@ -79,6 +79,31 @@ func TestMCPHTTPRejectsUntrustedBrowserRequests(t *testing.T) {
 		handler.ServeHTTP(resp, req)
 		if resp.Code != http.StatusForbidden {
 			t.Errorf("host %q origin %q: status %d, want 403", tc.host, tc.origin, resp.Code)
+		}
+	}
+}
+
+func TestMCPHTTPAllowedHost(t *testing.T) {
+	handler := httpHandler(server.New(client.New(client.Config{})), []string{" 192.0.2.10 ", "testbox.example"})
+	for _, tc := range []struct {
+		host, origin string
+		want         int
+	}{
+		{"192.0.2.10:3000", "", http.StatusMethodNotAllowed},
+		{"TESTBOX.example:3000", "", http.StatusMethodNotAllowed},
+		{"192.0.2.11:3000", "", http.StatusForbidden},
+		{"testbox.example:3000", "https://untrusted.example", http.StatusForbidden},
+	} {
+		method := http.MethodGet
+		if tc.origin != "" {
+			method = http.MethodPost
+		}
+		req := httptest.NewRequest(method, "http://"+tc.host+"/mcp", nil)
+		req.Header.Set("Origin", tc.origin)
+		resp := httptest.NewRecorder()
+		handler.ServeHTTP(resp, req)
+		if resp.Code != tc.want {
+			t.Errorf("host %q origin %q: status %d, want %d", tc.host, tc.origin, resp.Code, tc.want)
 		}
 	}
 }

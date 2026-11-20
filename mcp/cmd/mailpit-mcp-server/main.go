@@ -63,13 +63,14 @@ func runSTDIO(s *mcp.Server) {
 	}
 }
 
-func httpHandler(s *mcp.Server) http.Handler {
+func httpHandler(s *mcp.Server, allowedHosts []string) http.Handler {
 	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server {
 		return s
 	}, &mcp.StreamableHTTPOptions{
-		Stateless:           true,
-		JSONResponse:        true,
-		MaxRequestBodyBytes: 64 << 20,
+		Stateless:                  true,
+		JSONResponse:               true,
+		MaxRequestBodyBytes:        64 << 20,
+		DisableLocalhostProtection: true, // replaced by the explicit Host check below
 	})
 	protected := http.NewCrossOriginProtection().Handler(handler)
 
@@ -80,11 +81,19 @@ func httpHandler(s *mcp.Server) http.Handler {
 		if err != nil {
 			host = r.Host
 		}
-		if ip := net.ParseIP(strings.Trim(host, "[]")); !strings.EqualFold(host, "localhost") && !ip.IsLoopback() {
-			http.Error(w, "Forbidden: loopback Host required", http.StatusForbidden)
+		host = strings.Trim(host, "[]")
+		if strings.EqualFold(host, "localhost") || net.ParseIP(host).IsLoopback() {
+			protected.ServeHTTP(w, r)
 			return
 		}
-		protected.ServeHTTP(w, r)
+		for _, allowed := range allowedHosts {
+			allowed = strings.TrimSpace(allowed)
+			if allowed != "" && strings.EqualFold(host, allowed) {
+				protected.ServeHTTP(w, r)
+				return
+			}
+		}
+		http.Error(w, "Forbidden: unrecognized Host", http.StatusForbidden)
 	})
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, "ok")
@@ -98,7 +107,7 @@ func runHTTP(s *mcp.Server, cfg *server.Config) {
 	log.Printf("Starting Mailpit MCP server (Streamable HTTP, version %s) on %s", server.Version, addr)
 	httpServer := &http.Server{
 		Addr:              addr,
-		Handler:           httpHandler(s),
+		Handler:           httpHandler(s, cfg.HTTPAllowedHosts),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

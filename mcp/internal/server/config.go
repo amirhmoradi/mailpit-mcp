@@ -4,6 +4,7 @@ package server
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/amirhmoradi/mailpit-mcp/internal/client"
@@ -18,9 +19,10 @@ type Config struct {
 	Timeout    time.Duration
 
 	// MCP transport settings
-	Transport string // "stdio" or "http"
-	HTTPHost  string
-	HTTPPort  int
+	Transport        string // "stdio" or "http"
+	HTTPHost         string
+	HTTPPort         int
+	HTTPAllowedHosts []string
 
 	// Logging
 	LogLevel string
@@ -64,6 +66,9 @@ func (c *Config) LoadFromEnv() {
 		if port, err := strconv.Atoi(v); err == nil {
 			c.HTTPPort = port
 		}
+	}
+	if v := os.Getenv("MCP_HTTP_ALLOWED_HOSTS"); v != "" {
+		c.HTTPAllowedHosts = strings.Split(v, ",")
 	}
 	if v := os.Getenv("MCP_LOG_LEVEL"); v != "" {
 		c.LogLevel = v
